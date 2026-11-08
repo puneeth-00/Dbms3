@@ -1,0 +1,158 @@
+<%- include('partials/header') %>
+
+<% if (error) { %>
+    <div class="alert alert-danger">
+        <span>⚠️ <strong>Database Constraint / Trigger Rejection:</strong> <%= error %></span>
+    </div>
+<% } %>
+
+<% if (success) { %>
+    <div class="alert alert-success">
+        <span>✅ <%= success %></span>
+    </div>
+<% } %>
+
+<div class="section-header">
+    <div>
+        <h2 class="section-title">🎓 Student Academic Portal</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Submit new certificate requests and track university processing status.</p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Certificate Request Form -->
+    <div class="card">
+        <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Apply for New Certificate</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Enforced by PostgreSQL Trigger: <em>Duplicate pending requests for the same certificate type will be rejected.</em>
+        </p>
+
+        <form action="/students/request" method="POST">
+            <div class="form-group">
+                <label for="student_id">Select Enrolled Student *</label>
+                <select name="student_id" id="student_id" required>
+                    <option value="">-- Choose Student --</option>
+                    <% students.forEach(s => { %>
+                        <option value="<%= s.student_id %>">
+                            <%= s.reg_number %> - <%= s.full_name %> (<%= s.dept_code %>)
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cert_type_id">Certificate Type *</label>
+                <select name="cert_type_id" id="cert_type_id" required>
+                    <option value="">-- Choose Certificate Type --</option>
+                    <% certTypes.forEach(ct => { %>
+                        <option value="<%= ct.cert_type_id %>">
+                            <%= ct.title %> (Fee: ₹<%= parseFloat(ct.processing_fee).toFixed(2) %>, SLA: <%= ct.sla_days %> Days)
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="purpose">Purpose of Application *</label>
+                <textarea name="purpose" id="purpose" rows="3" placeholder="e.g., Higher education application, employer verification, visa processing..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                Submit Certificate Request
+            </button>
+        </form>
+    </div>
+
+    <!-- Enrolled Students Directory -->
+    <div class="card">
+        <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Active Students Directory</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Sample student records mapped across departments in the database.
+        </p>
+
+        <div class="table-container" style="max-height: 380px; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Reg No</th>
+                        <th>Student Name</th>
+                        <th>Dept</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% students.forEach(s => { %>
+                        <tr>
+                            <td><code><%= s.reg_number %></code></td>
+                            <td>
+                                <strong><%= s.full_name %></strong><br>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);"><%= s.email %></span>
+                            </td>
+                            <td><span class="badge badge-active"><%= s.dept_code %></span></td>
+                            <td><span class="badge badge-<%= s.academic_status.toLowerCase() %>"><%= s.academic_status %></span></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- All Student Requests History -->
+<div class="card">
+    <div class="section-header">
+        <h3 class="section-title">Submitted Certificate Requests History</h3>
+        <span style="font-size: 0.85rem; color: var(--text-muted);"><%= requests.length %> Total Requests</span>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Req #</th>
+                    <th>Student</th>
+                    <th>Certificate Type</th>
+                    <th>Purpose</th>
+                    <th>Submitted On</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (requests.length === 0) { %>
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No certificate requests found.</td>
+                    </tr>
+                <% } %>
+                <% requests.forEach(r => { %>
+                    <tr>
+                        <td><strong>#<%= r.request_id %></strong></td>
+                        <td>
+                            <strong><%= r.full_name %></strong><br>
+                            <code><%= r.reg_number %></code>
+                        </td>
+                        <td><%= r.cert_title %></td>
+                        <td style="max-width: 250px; font-size: 0.85rem;"><%= r.purpose %></td>
+                        <td><%= new Date(r.requested_at).toLocaleDateString() %></td>
+                        <td>
+                            <span class="badge badge-<%= r.status.toLowerCase() %>">
+                                <%= r.status %>
+                            </span>
+                        </td>
+                        <td>
+                            <% if (r.status === 'ISSUED') { %>
+                                <a href="/certificate/<%= r.request_id %>" class="btn btn-outline btn-sm">
+                                    📜 View Certificate
+                                </a>
+                            <% } else { %>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">In Review</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

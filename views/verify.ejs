@@ -1,0 +1,137 @@
+<%- include('partials/header') %>
+
+<div class="section-header">
+    <div>
+        <h2 class="section-title">🔍 Public Academic Credential Verification</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            Instant cryptographic tamper check for background verification agencies, employers, and foreign universities.
+        </p>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Verification Query Form -->
+    <div class="card">
+        <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Query Certificate Database</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+            Enter the official serial number printed on the student's document.
+        </p>
+
+        <form action="/verify" method="POST">
+            <div class="form-group">
+                <label for="cert_number">Certificate Serial Number *</label>
+                <input type="text" name="cert_number" id="cert_number" placeholder="e.g., EDU-2026-CSE-00003" value="<%= queriedCert || '' %>" required>
+            </div>
+
+            <div class="form-group">
+                <label for="verifier_name">Verifier Full Name *</label>
+                <input type="text" name="verifier_name" id="verifier_name" placeholder="e.g., Jane Doe (HR / Background Screener)" required>
+            </div>
+
+            <div class="form-group">
+                <label for="verifier_org">Organization / Company Name *</label>
+                <input type="text" name="verifier_org" id="verifier_org" placeholder="e.g., Google, Infosys, Embassy of Canada" required>
+            </div>
+
+            <button type="submit" class="btn btn-success" style="width: 100%;">
+                🛡️ Verify Academic Authenticity
+            </button>
+        </form>
+    </div>
+
+    <!-- Verification Result Display -->
+    <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+        <% if (result) { %>
+            <% if (result.isValid) { %>
+                <div style="border: 2px solid #059669; background: #ecfdf5; border-radius: 12px; padding: 1.5rem; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">✅</div>
+                    <h3 style="color: #065f46; font-size: 1.5rem; margin-bottom: 0.5rem;">GENUINE CREDENTIAL VERIFIED</h3>
+                    <p style="color: #047857; font-size: 0.9rem; margin-bottom: 1.25rem;">
+                        This document has been formally issued and digitally recorded in the university database.
+                    </p>
+
+                    <div style="text-align: left; background: white; padding: 1rem; border-radius: 8px; border: 1px solid #a7f3d0; font-size: 0.9rem; line-height: 1.8;">
+                        <strong>Candidate:</strong> <%= result.data.full_name %><br>
+                        <strong>Registration / USN:</strong> <code><%= result.data.reg_number %></code><br>
+                        <strong>Department:</strong> <%= result.data.dept_name %><br>
+                        <strong>Credential Title:</strong> <%= result.data.cert_title %><br>
+                        <strong>Date of Issuance:</strong> <%= new Date(result.data.issue_date).toLocaleDateString() %><br>
+                        <strong>Issuing Authority:</strong> <%= result.data.issued_by %><br>
+                        <div style="margin-top: 0.5rem;">
+                            <strong>Cryptographic Hash:</strong>
+                            <div class="cert-hash"><%= result.data.verification_hash %></div>
+                        </div>
+                    </div>
+                </div>
+            <% } else { %>
+                <div style="border: 2px solid #dc2626; background: #fef2f2; border-radius: 12px; padding: 2rem; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">❌</div>
+                    <h3 style="color: #991b1b; font-size: 1.5rem; margin-bottom: 0.5rem;">VERIFICATION FAILED</h3>
+                    <p style="color: #b91c1c; font-size: 0.95rem; margin-bottom: 1rem;">
+                        No legitimate university record matches serial number <code><%= queriedCert %></code>.
+                    </p>
+                    <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #fecaca; font-size: 0.85rem; color: #7f1d1d;">
+                        ⚠️ <strong>Possible Fraud Warning:</strong> This certificate is either non-existent, unissued, or falsified. A security audit entry has been logged.
+                    </div>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🏛️</div>
+                <h3>Official Credential Check</h3>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                    Enter a certificate number on the left to perform an instant database check.
+                </p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Verification Audit Trail -->
+<div class="card">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">Audit Trail (verification_logs Table)</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">All third-party verification requests recorded for security compliance.</p>
+        </div>
+        <span class="badge badge-active"><%= logs.length %> Verifications Logged</span>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>Certificate Queried</th>
+                    <th>Verifier Name</th>
+                    <th>Organization</th>
+                    <th>Result</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (logs.length === 0) { %>
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No verifications logged yet.</td>
+                    </tr>
+                <% } %>
+                <% logs.forEach(l => { %>
+                    <tr>
+                        <td>#<%= l.log_id %></td>
+                        <td><code><%= l.cert_number_queried %></code></td>
+                        <td><strong><%= l.verifier_name %></strong></td>
+                        <td><%= l.verifier_org %></td>
+                        <td>
+                            <span class="badge badge-<%= l.verification_result.toLowerCase() %>">
+                                <%= l.verification_result %>
+                            </span>
+                        </td>
+                        <td><%= new Date(l.verified_at).toLocaleString() %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

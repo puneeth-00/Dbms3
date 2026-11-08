@@ -1,0 +1,141 @@
+<%- include('partials/header') %>
+
+<div class="hero">
+    <div class="hero-content">
+        <h1>Academic Certificate Request & Verification System</h1>
+        <p>A secure, normalized relational database platform addressing credential fraud and streamlining academic document issuance for universities, students, and global employers.</p>
+        <div class="hero-badges">
+            <span class="hero-chip">🎓 6 Relational Tables</span>
+            <span class="hero-chip">⚡ 2 PostgreSQL Triggers</span>
+            <span class="hero-chip">⚙️ ACID Stored Procedures</span>
+            <span class="hero-chip">🛡️ Cryptographic Verification</span>
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span>Enrolled Students</span>
+            <span>👥</span>
+        </div>
+        <div class="stat-value"><%= stats.student_count %></div>
+        <div class="stat-desc">Across <%= stats.dept_count %> Academic Departments</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span>Certificate Requests</span>
+            <span>📝</span>
+        </div>
+        <div class="stat-value"><%= stats.total_requests %></div>
+        <div class="stat-desc"><%= stats.pending_requests %> pending review</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span>Certificates Issued</span>
+            <span>📜</span>
+        </div>
+        <div class="stat-value"><%= stats.issued_count %></div>
+        <div class="stat-desc">With cryptographic verification hash</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <span>Verifications Conducted</span>
+            <span>🔍</span>
+        </div>
+        <div class="stat-value"><%= stats.verification_count %></div>
+        <div class="stat-desc">By external employers & universities</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Quick Actions Card -->
+    <div class="card">
+        <h3 class="section-title" style="margin-bottom: 1rem;">System Portals</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Access role-based workflows and institutional verification services:</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <a href="/students" class="btn btn-outline" style="justify-content: space-between;">
+                <span>🎓 <strong>Student Portal</strong> - Request certificates & track status</span>
+                <span>&rarr;</span>
+            </a>
+            <a href="/admin" class="btn btn-outline" style="justify-content: space-between;">
+                <span>🏛️ <strong>Registrar Office</strong> - Review & issue certificates</span>
+                <span>&rarr;</span>
+            </a>
+            <a href="/verify" class="btn btn-success" style="justify-content: space-between;">
+                <span>🔍 <strong>Public Verification Portal</strong> - Real-time credential audit</span>
+                <span>&rarr;</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Active Certificate Types -->
+    <div class="card">
+        <h3 class="section-title" style="margin-bottom: 1rem;">Verifiable Certificate Catalog</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">Catalog of authorized credentials supported by the university schema:</p>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Title</th>
+                        <th>Fee</th>
+                        <th>SLA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% certTypes.forEach(ct => { %>
+                        <tr>
+                            <td><code><%= ct.code %></code></td>
+                            <td><strong><%= ct.title %></strong></td>
+                            <td>₹<%= parseFloat(ct.processing_fee).toFixed(2) %></td>
+                            <td><%= ct.sla_days %> Days</td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="section-header">
+        <h3 class="section-title">Recent Certificate Requests</h3>
+        <a href="/admin" class="btn btn-outline btn-sm">View All in Registrar &rarr;</a>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Req #</th>
+                    <th>Student Name</th>
+                    <th>Reg No</th>
+                    <th>Certificate Type</th>
+                    <th>Requested At</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% recentRequests.forEach(req => { %>
+                    <tr>
+                        <td>#<%= req.request_id %></td>
+                        <td><strong><%= req.full_name %></strong></td>
+                        <td><code><%= req.reg_number %></code></td>
+                        <td><%= req.cert_title %></td>
+                        <td><%= new Date(req.requested_at).toLocaleDateString() %></td>
+                        <td>
+                            <span class="badge badge-<%= req.status.toLowerCase() %>">
+                                <%= req.status %>
+                            </span>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

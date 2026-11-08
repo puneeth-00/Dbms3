@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> | EduVerify DBMS</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="brand">
+            <span class="brand-badge">EduVerify</span>
+            <span>Academic Portal</span>
+        </a>
+        <div class="nav-links">
+            <a href="/" class="nav-link <%= activeTab === 'home' ? 'active' : '' %>">Dashboard</a>
+            <a href="/students" class="nav-link <%= activeTab === 'students' ? 'active' : '' %>">Student Portal</a>
+            <a href="/admin" class="nav-link <%= activeTab === 'admin' ? 'active' : '' %>">Registrar Office</a>
+            <a href="/verify" class="nav-link <%= activeTab === 'verify' ? 'active' : '' %> btn-verify-nav">🔍 Public Verification</a>
+        </div>
+    </nav>
+    <div class="container">
